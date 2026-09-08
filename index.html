@@ -234,6 +234,19 @@ a{color:var(--cyan);text-decoration:none}
   box-shadow:0 0 22px rgba(0,240,255,0.35), inset 0 0 12px rgba(0,240,255,0.15);
 }
 .login-input::placeholder{color:rgba(148,163,184,0.6)}
+.login-error{
+  color:#FF0055;
+  background:rgba(255,0,85,0.14);
+  border:1.5px solid #FF0055;
+  border-radius:12px;
+  padding:10px 14px;
+  margin:-6px 0 14px 0;
+  font-size:.88rem;
+  font-weight:700;
+  text-align:center;
+  animation:fade-in .25s;
+  box-shadow:0 0 14px rgba(255,0,85,0.3);
+}
 .login-btns{display:flex;flex-direction:column;gap:12px;width:100%}
 
 /* ==============================
@@ -703,6 +716,7 @@ a{color:var(--cyan);text-decoration:none}
     </div>
 
     <input type="text" id="player-name-input" class="login-input" placeholder="اسم خود را وارد کنید..." maxlength="30" autocomplete="off">
+    <div id="login-error-msg" class="login-error" style="display:none"></div>
 
     <div class="login-btns">
       <button class="btn btn-red pulse" onclick="startGame()">🚀 شروع مأموریت</button>
@@ -948,11 +962,129 @@ function initParticles() {
   }
 }
 
+/* ======================================================================
+   PROFANITY & CONTENT FILTER (فارسی، فینگلیش و انگلیسی)
+   ====================================================================== */
+const PROFANITY_PATTERNS = [
+  // کلمات رکیک، فحش و الفاظ نامناسب فارسی
+  /کیر(?:م|ت|ش|ی|خر|دستی|ها)?(?![ا-ی])/i,
+  /ک[و]?[سص](?:کش|لیس|ی|م|ت|خول|خل|شعر)?(?![ا-ی])/i,
+  /ک[و][ن](?:ی|ده|کش|م|ت|خر|سوز)?(?![ا-ی])/i,
+  /جند[هه](?:گی)?/i,
+  /لاشی(?:گری)?/i,
+  /دیو[ثس]/i,
+  /کسکش|کصکش/i,
+  /خارک[سص][هه]/i,
+  /مادر\s*جند[هه]/i,
+  /حروم\s*زاد[هه]/i,
+  /بی\s*ناموس/i,
+  /تخم\s*سگ|تخمی(?![ا-ی])/i,
+  /جق(?:ی|زدن)?(?![ا-ی])/i,
+  /سکس(?:ی)?(?![ا-ی])/i,
+  /قحب[هه]/i,
+  /گوه(?:ی|خور)?(?![ا-ی])/i,
+  /پفیوز|پفیوس/i,
+  /شاش(?:و|یدن)?(?![ا-ی])/i,
+  /عن(?:تر|ی)?(?![ا-ی])/i,
+  /چاقال/i,
+  /سوراخ\s*کون/i,
+  /پشمام|پشم(?:ام|ت|ش)?(?![ا-ی])/i,
+
+  // Finglish Vulgarity & Slurs
+  /k+[i!1l]+r+(?:[i!1]|a+m+|e+t+|e+|k+h+a+r+|d+a+s+t+i+)?(?![a-z])/i,
+  /k+[o0u]+[s5]+(?:[o0]|i|e|k+e+[s5]+h|l+i+[s5]|k+h+[o0]+l)?(?![a-z])/i,
+  /k+[o0u]+n+(?:[i!1]|d+e+|k+e+[s5]+h|m|e+t)?(?![a-z])/i,
+  /c+[o0u]+[o0u]+n+(?:[i!1]|d+e+|k+e+[s5]+h)?(?![a-z])/i,
+  /j+[e3a]+n+d+[e3a]+/i,
+  /l+a+[s5]+h+[i!1]/i,
+  /d+a+y+[o0u]+[s5]+/i,
+  /k+h+a+r+k+[o0u]+[s5]+/i,
+  /m+a+d+a+r+j+[e3a]+n+d/i,
+  /h+a+r+a+m+z+a+d|h+a+r+[o0]+m+z+a+d/i,
+  /b+[i!1]+n+a+m+[o0u]+[s5]+/i,
+  /t+[o0]+k+h+m+[i!1]?/i,
+  /j+a+g+h+[i!1]?/i,
+  /g+[o0]+h+(?:[i!1]|k+h+[o0]+r)?(?![a-z])/i,
+  /s+h+a+[s5]+h+(?:[o0]|i+d+a+n)?(?![a-z])/i,
+  /c+h+a+g+h+a+l/i,
+  /p+[o0u]+f+y+[o0u]+z/i,
+  /b+[o0]+k+[o0]+n(?![a-z])/i,
+  /g+a+y+[i!1]+[s5]+h/i,
+
+  // English Vulgarity & Slurs
+  /f+u+c+k/i,
+  /s+h+i+t/i,
+  /b+i+t+c+h/i,
+  /a+s+s+h+[o0]+l+e/i,
+  /(?:^|[^a-z])a+s+s+(?:$|[^a-z])/i,
+  /(?:^|[^a-z])d+i+c+k+(?:$|[^a-z])/i,
+  /p+u+s+s+y/i,
+  /(?:^|[^a-z])c+[o0]+c+k+(?:$|[^a-z])/i,
+  /c+u+n+t/i,
+  /w+h+[o0]+r+e/i,
+  /s+l+u+t/i,
+  /b+a+s+t+a+r+d/i,
+  /n+i+g+g+[e3a]+r/i,
+  /f+a+g+g+[o0]+t/i,
+  /p+[o0]+r+n/i,
+  /(?:^|[^a-z])s+e+x+(?:$|[^a-z])/i,
+  /b+[o0]+[o0]+b+s?/i,
+  /t+i+t+s?/i,
+  /w+a+n+k+e+r/i
+];
+
+function isProfane(name) {
+  if (!name) return false;
+  let s = name.toLowerCase();
+  s = s.replace(/[\u200b-\u200f\ufeff\u064b-\u065f\u0640]/g, '')
+       .replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/ة/g, 'ه');
+  const clean_s = s.replace(/[\s_\.\-\+*#@!$%^&=~`|/\\:,;"'()[\]{}]+/g, '');
+
+  for (let i = 0; i < PROFANITY_PATTERNS.length; i++) {
+    const p = PROFANITY_PATTERNS[i];
+    if (p.test(s) || p.test(clean_s)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function showLoginError(msg) {
+  const input = document.getElementById('player-name-input');
+  const errEl = document.getElementById('login-error-msg');
+  input.style.borderColor = '#FF0055';
+  input.style.boxShadow = '0 0 16px rgba(255,0,85,0.4)';
+  if (errEl) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+  input.focus();
+}
+
+function clearLoginError() {
+  const input = document.getElementById('player-name-input');
+  const errEl = document.getElementById('login-error-msg');
+  input.style.borderColor = '';
+  input.style.boxShadow = '';
+  if (errEl) {
+    errEl.style.display = 'none';
+  }
+}
+
 function startGame() {
-  const name = document.getElementById('player-name-input').value.trim();
+  clearLoginError();
+  const input = document.getElementById('player-name-input');
+  const name = input.value.trim();
   if (!name) {
-    document.getElementById('player-name-input').style.borderColor = '#E74C3C';
-    document.getElementById('player-name-input').setAttribute('placeholder', '⚠️ لطفاً اسم خود را وارد کنید');
+    showLoginError('⚠️ لطفاً نام و نام خانوادگی خود را وارد کنید.');
+    return;
+  }
+  if (name.length < 2) {
+    showLoginError('⚠️ لطفاً حداقل ۲ حرف برای نام وارد کنید.');
+    return;
+  }
+  if (isProfane(name)) {
+    showLoginError('🚫 این نام مجاز نیست! لطفاً از نام و نام خانوادگی واقعی و مناسب اداری استفاده کنید.');
     return;
   }
   gameState.playerName = name;
@@ -1772,6 +1904,13 @@ function launchConfetti() {
 document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   openDB().catch(() => {});
+  const nameInput = document.getElementById('player-name-input');
+  if (nameInput) {
+    nameInput.addEventListener('input', clearLoginError);
+    nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') startGame();
+    });
+  }
 });
 
 // Register Service Worker
