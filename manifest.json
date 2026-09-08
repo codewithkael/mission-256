@@ -1,0 +1,15 @@
+{
+  "name": "مأموریت ۲۵۶ — رمزگشایی بیت‌ها",
+  "short_name": "مأموریت ۲۵۶",
+  "description": "بازی تیمی بهسازان ملت — Mission 256 Beyond the Bits",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#080C14",
+  "background_color": "#080C14",
+  "dir": "rtl",
+  "lang": "fa",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

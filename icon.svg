@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#C0392B"/>
+  <circle cx="256" cy="230" r="160" fill="#2C3E50" opacity="0.3"/>
+  <text x="256" y="270" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="180" fill="white">256</text>
+  <text x="256" y="390" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="55" fill="#F39C12">MISSION</text>
+  <text x="256" y="450" text-anchor="middle" font-family="Arial,sans-serif" font-size="35" fill="#ECF0F1">Beyond the Bits</text>
+</svg>

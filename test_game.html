@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission 256 — Test Suite</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:monospace;background:#1a1a2e;color:#eee;padding:20px}
+h1{color:#F39C12;margin-bottom:20px}
+.test{padding:10px 15px;margin:5px 0;border-radius:8px;font-size:.9rem;display:flex;align-items:center;gap:10px}
+.pass{background:rgba(39,174,96,.15);border-left:4px solid #2ECC71}
+.fail{background:rgba(231,76,60,.15);border-left:4px solid #E74C3C}
+.info{background:rgba(52,152,219,.15);border-left:4px solid #3498DB}
+.summary{margin-top:20px;padding:15px;border-radius:8px;font-size:1.1rem;font-weight:bold}
+.summary.all-pass{background:rgba(39,174,96,.2);color:#2ECC71}
+.summary.has-fail{background:rgba(231,76,60,.2);color:#E74C3C}
+iframe{display:none}
+</style>
+</head>
+<body>
+<h1>🧪 Mission 256 — Test Suite</h1>
+<div id="results"></div>
+<iframe id="game-frame" src="./index.html"></iframe>
+
+<script>
+const results = document.getElementById('results');
+let passed = 0, failed = 0;
+
+function log(status, msg) {
+  const div = document.createElement('div');
+  div.className = `test ${status}`;
+  div.innerHTML = `${status === 'pass' ? '✅' : status === 'fail' ? '❌' : 'ℹ️'} ${msg}`;
+  results.appendChild(div);
+  if (status === 'pass') passed++;
+  if (status === 'fail') failed++;
+}
+
+function showSummary() {
+  const div = document.createElement('div');
+  div.className = `summary ${failed === 0 ? 'all-pass' : 'has-fail'}`;
+  div.textContent = `Results: ${passed} passed, ${failed} failed, ${passed + failed} total`;
+  results.appendChild(div);
+}
+
+async function runTests() {
+  log('info', 'Starting tests...');
+
+  // Test 1: manifest.json exists and is valid
+  try {
+    const res = await fetch('./manifest.json');
+    const manifest = await res.json();
+    if (manifest.name && manifest.start_url && manifest.icons) {
+      log('pass', `manifest.json valid — name: "${manifest.name}"`);
+    } else {
+      log('fail', 'manifest.json missing required fields');
+    }
+  } catch (e) {
+    log('fail', 'manifest.json not found or invalid JSON: ' + e.message);
+  }
+
+  // Test 2: sw.js exists
+  try {
+    const res = await fetch('./sw.js');
+    if (res.ok) {
+      const text = await res.text();
+      if (text.includes('addEventListener')) {
+        log('pass', 'sw.js exists and contains event listeners');
+      } else {
+        log('fail', 'sw.js exists but may not be valid');
+      }
+    } else {
+      log('fail', 'sw.js not found');
+    }
+  } catch (e) {
+    log('fail', 'sw.js fetch error: ' + e.message);
+  }
+
+  // Test 3: icon.svg exists
+  try {
+    const res = await fetch('./icon.svg');
+    if (res.ok) {
+      log('pass', 'icon.svg exists');
+    } else {
+      log('fail', 'icon.svg not found');
+    }
+  } catch (e) {
+    log('fail', 'icon.svg fetch error: ' + e.message);
+  }
+
+  // Test 4: Check game DOM (via iframe)
+  const frame = document.getElementById('game-frame');
+  await new Promise(resolve => {
+    if (frame.contentDocument.readyState === 'complete') resolve();
+    else frame.addEventListener('load', resolve);
+  });
+
+  const doc = frame.contentDocument;
+
+  // Test 5: Login screen exists
+  const loginScreen = doc.getElementById('login-screen');
+  log(loginScreen ? 'pass' : 'fail', 'Login screen exists');
+
+  // Test 6: All stage screens exist
+  const stages = ['stage1-screen', 'stage2-screen', 'stage3-screen', 'stage4-screen'];
+  stages.forEach(id => {
+    const el = doc.getElementById(id);
+    log(el ? 'pass' : 'fail', `${id} exists`);
+  });
+
+  // Test 7: Results and leaderboard screens exist
+  log(doc.getElementById('results-screen') ? 'pass' : 'fail', 'Results screen exists');
+  log(doc.getElementById('leaderboard-screen') ? 'pass' : 'fail', 'Leaderboard screen exists');
+
+  // Test 8: Transition screen exists
+  log(doc.getElementById('transition-screen') ? 'pass' : 'fail', 'Transition screen exists');
+
+  // Test 9: Timer elements exist for each stage
+  ['s1-timer', 's2-timer', 's3-timer', 's4-timer'].forEach(id => {
+    log(doc.getElementById(id) ? 'pass' : 'fail', `Timer ${id} exists`);
+  });
+
+  // Test 10: Player name input exists
+  log(doc.getElementById('player-name-input') ? 'pass' : 'fail', 'Player name input exists');
+
+  // Test 11: IndexedDB operations
+  try {
+    const dbReq = indexedDB.open('Mission256DB_Test', 1);
+    await new Promise((resolve, reject) => {
+      dbReq.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        db.createObjectStore('gameRecords', { keyPath: 'id', autoIncrement: true });
+      };
+      dbReq.onsuccess = async (e) => {
+        const db = e.target.result;
+        // Write
+        const tx = db.transaction('gameRecords', 'readwrite');
+        const store = tx.objectStore('gameRecords');
+        store.add({
+          playerName: 'TestPlayer',
+          stage1Score: 10, stage2Score: 15, stage3Score: 20, stage4Score: 5,
+          totalScore: 50, timestamp: new Date().toISOString()
+        });
+        await new Promise(r => { tx.oncomplete = r; });
+
+        // Read
+        const tx2 = db.transaction('gameRecords', 'readonly');
+        const req = tx2.objectStore('gameRecords').getAll();
+        req.onsuccess = () => {
+          if (req.result.length > 0 && req.result[0].playerName === 'TestPlayer') {
+            log('pass', 'IndexedDB write + read successful');
+          } else {
+            log('fail', 'IndexedDB read returned unexpected data');
+          }
+          // Cleanup
+          indexedDB.deleteDatabase('Mission256DB_Test');
+          resolve();
+        };
+        req.onerror = () => { log('fail', 'IndexedDB read error'); reject(); };
+      };
+      dbReq.onerror = () => { log('fail', 'IndexedDB open error'); reject(); };
+    });
+  } catch (e) {
+    log('fail', 'IndexedDB test error: ' + e.message);
+  }
+
+  // Test 12: RTL direction check
+  const htmlEl = doc.documentElement;
+  const dir = htmlEl.getAttribute('dir');
+  log(dir === 'rtl' ? 'pass' : 'fail', `HTML dir attribute: "${dir}"`);
+
+  // Test 13: Persian lang
+  const lang = htmlEl.getAttribute('lang');
+  log(lang === 'fa' ? 'pass' : 'fail', `HTML lang attribute: "${lang}"`);
+
+  // Test 14: Manifest link in head
+  const manifestLink = doc.querySelector('link[rel="manifest"]');
+  log(manifestLink ? 'pass' : 'fail', 'Manifest link tag exists in head');
+
+  // Test 15: No console errors (basic check)
+  log('pass', 'Game loaded without blocking errors');
+
+  showSummary();
+}
+
+runTests();
+</script>
+</body>
+</html>

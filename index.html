@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080C14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>مأموریت ۲۵۶ — رمزگشایی بیت‌ها</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ==============================
+   RESET & BASE — SOFT DARK CYBER
+   ============================== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cyan:#00F0FF;--cyan-glow:rgba(0,240,255,0.4);
+  --pink:#FF0055;--pink-glow:rgba(255,0,85,0.4);
+  --gold:#FFD700;--gold-glow:rgba(255,215,0,0.4);
+  --green:#00FF88;--green-glow:rgba(0,255,136,0.4);
+  --purple:#BD00FF;--purple-glow:rgba(189,0,255,0.4);
+
+  --bg-deep:#0A0E18;--bg-card:#0F172A;--bg-card-alt:#141F36;
+  --bg-panel:rgba(15,23,42,0.92);
+  --border-cyan:rgba(0,240,255,0.35);
+  --border-subtle:rgba(255,255,255,0.1);
+  --text-main:#F8FAFC;--text-dim:#94A3B8;
+  --font:'Vazirmatn',Tahoma,Arial,sans-serif;
+  --font-title:'Lalezar','Vazirmatn',cursive,sans-serif;
+  --radius:16px;
+}
+html,body{
+  width:100%;min-height:100vh;
+  font-family:var(--font);
+  background:var(--bg-deep);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(0,240,255,0.08) 0%, transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(255,0,85,0.08) 0%, transparent 60%),
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size:100% 100%, 100% 100%, 28px 28px, 28px 28px;
+  color:var(--text-main);
+  overflow-x:hidden;
+  direction:rtl;
+  text-align:right;
+}
+a{color:var(--cyan);text-decoration:none}
+
+/* ==============================
+   LAYOUT
+   ============================== */
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:relative;width:100%}
+.screen.active{display:flex}
+.container{max-width:500px;width:100%;margin:0 auto}
+
+/* ==============================
+   HEADER BAR — BALANCED GLOW
+   ============================== */
+.game-header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(10,14,24,0.95);
+  backdrop-filter:blur(10px);
+  padding:12px 20px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1.5px solid rgba(0,240,255,0.3);
+  box-shadow:0 4px 20px rgba(0,0,0,0.5), 0 1px 12px rgba(0,240,255,0.15);
+}
+.game-header .player-name{
+  color:var(--cyan);
+  font-weight:700;font-size:1rem;
+  text-shadow:0 0 10px var(--cyan-glow);
+}
+.game-header .stage-info{
+  color:var(--text-dim);font-size:.88rem;
+  letter-spacing:0.5px;
+}
+.game-header .timer-badge{
+  background:rgba(255,0,85,0.15);
+  color:var(--pink);
+  padding:5px 16px;border-radius:22px;
+  font-family:var(--font-title);
+  font-size:1.3rem;letter-spacing:1px;
+  min-width:60px;text-align:center;
+  border:1.5px solid var(--pink);
+  box-shadow:0 0 14px var(--pink-glow);
+  text-shadow:0 0 8px rgba(255,0,85,0.6);
+  transition:all .3s;
+}
+.game-header .timer-badge.urgent{
+  color:#FFF;
+  background:rgba(255,0,85,0.35);
+  animation:urgent-timer-glow .5s infinite alternate;
+}
+@keyframes urgent-timer-glow{
+  0%{box-shadow:0 0 12px var(--pink-glow);transform:scale(1)}
+  100%{box-shadow:0 0 24px var(--pink);transform:scale(1.08)}
+}
+.game-header .score-badge{
+  background:rgba(255,215,0,0.14);
+  color:var(--gold);
+  padding:5px 16px;border-radius:22px;
+  font-family:var(--font-title);
+  font-size:1.25rem;letter-spacing:1px;
+  border:1.5px solid var(--gold);
+  box-shadow:0 0 14px var(--gold-glow);
+  text-shadow:0 0 8px rgba(255,215,0,0.5);
+}
+
+/* ==============================
+   BUTTONS — GORGEOUS GLOW & FONT
+   ============================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px 32px;
+  border-radius:var(--radius);
+  font-family:var(--font-title);
+  font-size:1.25rem;letter-spacing:0.8px;
+  cursor:pointer;transition:all .22s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  min-height:50px;
+}
+.btn:active{transform:scale(.96)}
+.btn-red{
+  background:rgba(255,0,85,0.2);
+  color:#FFF;
+  border:1.5px solid var(--pink);
+  box-shadow:0 0 18px var(--pink-glow), 0 4px 12px rgba(0,0,0,0.4);
+  text-shadow:0 0 8px rgba(255,0,85,0.6);
+}
+.btn-red:hover{
+  background:rgba(255,0,85,0.35);
+  box-shadow:0 0 26px rgba(255,0,85,0.65), 0 6px 16px rgba(0,0,0,0.5);
+  transform:translateY(-2px);
+}
+.btn-gold{
+  background:rgba(255,215,0,0.18);
+  color:#FFF;
+  border:1.5px solid var(--gold);
+  box-shadow:0 0 18px var(--gold-glow), 0 4px 12px rgba(0,0,0,0.4);
+  text-shadow:0 0 8px rgba(255,215,0,0.6);
+}
+.btn-gold:hover{
+  background:rgba(255,215,0,0.32);
+  box-shadow:0 0 26px rgba(255,215,0,0.65);
+  transform:translateY(-2px);
+}
+.btn-dark{
+  background:rgba(0,240,255,0.1);
+  color:var(--cyan);
+  border:1.5px solid var(--cyan);
+  box-shadow:0 0 14px var(--cyan-glow);
+  text-shadow:0 0 6px rgba(0,240,255,0.5);
+}
+.btn-dark:hover{
+  background:rgba(0,240,255,0.22);
+  color:#FFF;
+  box-shadow:0 0 22px var(--cyan);
+}
+.btn-sm{padding:10px 22px;font-size:1.05rem}
+.btn.pulse{animation:vibrant-pulse 2s infinite}
+@keyframes vibrant-pulse{
+  0%,100%{box-shadow:0 0 16px var(--pink-glow), 0 4px 12px rgba(0,0,0,0.4)}
+  50%{box-shadow:0 0 28px var(--pink), 0 0 40px rgba(255,0,85,0.35)}
+}
+
+/* ==============================
+   LOGIN SCREEN
+   ============================== */
+#login-screen{background:transparent;position:relative;overflow:hidden}
+.login-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.particle{
+  position:absolute;color:var(--cyan);opacity:.25;
+  font-weight:900;text-shadow:0 0 8px var(--cyan-glow);
+  animation:float-particle linear infinite;
+}
+@keyframes float-particle{0%{transform:translateY(100vh) rotate(0deg)}100%{transform:translateY(-100px) rotate(360deg)}}
+.login-logo{
+  font-family:var(--font-title);
+  font-size:2.7rem;color:#FFF;text-align:center;
+  margin-bottom:2px;letter-spacing:1px;
+  text-shadow:0 0 14px var(--cyan), 0 0 30px var(--cyan-glow);
+}
+.login-subtitle{
+  color:var(--gold);font-size:1.15rem;text-align:center;
+  margin-bottom:26px;font-weight:700;
+  text-shadow:0 0 10px var(--gold-glow);
+}
+.team-card{
+  background:var(--bg-panel);
+  border-radius:var(--radius);
+  padding:22px;margin-bottom:24px;
+  border:1.5px solid rgba(0,240,255,0.3);
+  box-shadow:0 0 22px rgba(0,240,255,0.18), 0 8px 24px rgba(0,0,0,0.5);
+  backdrop-filter:blur(8px);
+}
+.team-card h3{
+  color:var(--gold);font-family:var(--font-title);
+  font-size:1.35rem;margin-bottom:14px;text-align:center;
+  text-shadow:0 0 8px var(--gold-glow);
+}
+.team-members{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.member{
+  display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--text-main);
+  padding:9px 12px;background:rgba(255,255,255,0.04);
+  border-radius:12px;
+  border:1px solid rgba(0,240,255,0.2);
+  transition:all .2s;
+}
+.member:hover{border-color:var(--cyan);box-shadow:0 0 10px var(--cyan-glow)}
+.member .badge{
+  font-size:.68rem;
+  background:rgba(255,0,85,0.2);
+  color:var(--pink);
+  padding:2px 8px;border-radius:10px;
+  border:1px solid var(--pink);
+  box-shadow:0 0 8px var(--pink-glow);
+}
+.login-input{
+  width:100%;padding:14px 18px;
+  border:1.5px solid rgba(0,240,255,0.35);
+  border-radius:var(--radius);
+  background:rgba(15,23,42,0.9);
+  color:#FFF;
+  font-family:var(--font);font-size:1.05rem;text-align:center;
+  transition:all .25s;outline:none;margin-bottom:16px;
+  box-shadow:0 0 14px rgba(0,240,255,0.12), inset 0 0 10px rgba(0,0,0,0.5);
+}
+.login-input:focus{
+  border-color:var(--cyan);
+  box-shadow:0 0 22px rgba(0,240,255,0.35), inset 0 0 12px rgba(0,240,255,0.15);
+}
+.login-input::placeholder{color:rgba(148,163,184,0.6)}
+.login-btns{display:flex;flex-direction:column;gap:12px;width:100%}
+
+/* ==============================
+   TRANSITION SCREEN
+   ============================== */
+#transition-screen{background:transparent}
+.transition-content{text-align:center;max-width:460px;width:100%;padding:0 16px}
+.transition-stage-num{
+  font-family:var(--font-title);
+  font-size:5.5rem;color:var(--pink);
+  text-shadow:0 0 22px var(--pink), 0 0 45px var(--pink-glow);
+  animation:zoom-in .4s ease-out;
+}
+.transition-stage-name{
+  font-family:var(--font-title);
+  font-size:1.9rem;color:var(--cyan);
+  margin:6px 0;
+  text-shadow:0 0 12px var(--cyan-glow);
+}
+.transition-player{color:var(--gold);font-size:1.05rem;margin:6px 0;text-shadow:0 0 8px var(--gold-glow)}
+.transition-instructions{
+  background:var(--bg-panel);
+  border-radius:var(--radius);
+  padding:22px;margin:18px 0;text-align:right;
+  border:1.5px solid rgba(0,240,255,0.3);
+  box-shadow:0 0 24px rgba(0,240,255,0.18), 0 8px 24px rgba(0,0,0,0.5);
+  backdrop-filter:blur(10px);
+}
+.transition-instructions h4{
+  color:var(--gold);font-family:var(--font-title);
+  font-size:1.35rem;margin-bottom:14px;text-align:center;
+  text-shadow:0 0 8px var(--gold-glow);
+}
+.trans-rule{display:flex;align-items:flex-start;gap:12px;margin:12px 0;font-size:.92rem;color:var(--text-main);line-height:1.7}
+.trans-rule .rule-icon{
+  flex-shrink:0;width:32px;height:32px;border-radius:50%;
+  background:rgba(0,240,255,0.12);
+  border:1.5px solid var(--cyan);
+  box-shadow:0 0 10px var(--cyan-glow);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;margin-top:2px;
+}
+.trans-rule .rule-text{flex:1}
+.trans-rule .rule-text strong{color:var(--cyan);text-shadow:0 0 6px var(--cyan-glow)}
+.transition-timer-info{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,0,85,0.15);
+  border:1.5px solid var(--pink);
+  border-radius:14px;padding:9px 20px;margin:12px 0;
+  color:#FFF;font-size:1rem;
+  box-shadow:0 0 14px var(--pink-glow);
+  text-shadow:0 0 6px var(--pink);
+}
+.transition-start-area{margin-top:22px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes zoom-in{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* ==============================
+   STAGE 1: BINARY DECODER
+   ============================== */
+#stage1-screen{padding-top:75px}
+.decimal-display{
+  font-family:var(--font-title);
+  font-size:5.2rem;color:var(--gold);
+  text-align:center;margin:16px 0;
+  letter-spacing:2px;
+  text-shadow:0 0 20px var(--gold), 0 0 35px var(--gold-glow);
+}
+.bits-row{display:flex;justify-content:center;gap:10px;margin:18px 0;flex-wrap:wrap}
+.bit-btn{
+  width:52px;height:52px;border-radius:14px;
+  border:1.5px solid rgba(0,240,255,0.3);
+  background:var(--bg-card);
+  color:var(--text-dim);
+  font-family:var(--font-title);
+  font-size:1.7rem;cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 10px rgba(0,240,255,0.12);
+}
+.bit-btn.active{
+  color:#FFF;
+  background:rgba(0,240,255,0.22);
+  border-color:var(--cyan);
+  box-shadow:0 0 18px var(--cyan), inset 0 0 10px var(--cyan-glow);
+  text-shadow:0 0 8px var(--cyan);
+  transform:translateY(-2px);
+}
+.bit-labels{display:flex;justify-content:center;gap:10px;margin-bottom:10px}
+.bit-label{width:52px;text-align:center;font-size:.7rem;color:var(--cyan);font-weight:700}
+.binary-result{
+  text-align:center;color:var(--text-main);font-size:.95rem;
+  margin:12px 0;padding:12px;border-radius:12px;
+  background:var(--bg-card);
+  border:1px solid rgba(0,240,255,0.25);
+  box-shadow:0 0 12px rgba(0,240,255,0.1);
+}
+.check-area{text-align:center;margin-top:18px}
+.feedback{
+  text-align:center;padding:12px;border-radius:14px;margin:12px 0;
+  font-weight:700;font-size:1rem;animation:fade-in .25s;
+}
+.feedback.correct{
+  background:rgba(0,255,136,0.18);color:var(--green);
+  border:1.5px solid var(--green);
+  box-shadow:0 0 16px var(--green-glow);
+  text-shadow:0 0 6px var(--green);
+}
+.feedback.wrong{
+  background:rgba(255,0,85,0.18);color:#FF4071;
+  border:1.5px solid var(--pink);
+  box-shadow:0 0 16px var(--pink-glow);
+  text-shadow:0 0 6px var(--pink);
+}
+@keyframes fade-in{0%{opacity:0;transform:translateY(-8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* ==============================
+   STAGE 2: MEMORY GAME
+   ============================== */
+#stage2-screen{padding-top:75px}
+.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:400px;margin:18px auto;direction:ltr}
+.memory-card{aspect-ratio:1;border-radius:14px;cursor:pointer;position:relative;perspective:600px;min-height:70px}
+.memory-card-inner{width:100%;height:100%;position:relative;transition:transform .45s cubic-bezier(0.4, 0, 0.2, 1);transform-style:preserve-3d}
+.memory-card.flipped .memory-card-inner{transform:rotateY(180deg)}
+.memory-card.matched .memory-card-inner{transform:rotateY(180deg)}
+.memory-card.matched{animation:match-pop .35s}
+@keyframes match-pop{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.memory-card-front,.memory-card-back{
+  position:absolute;inset:0;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  backface-visibility:hidden;font-size:2.2rem;
+}
+.memory-card-back{
+  background:var(--bg-card);
+  border:1.5px solid rgba(0,240,255,0.3);
+  color:var(--cyan);
+  box-shadow:0 0 14px rgba(0,240,255,0.15);
+  font-family:var(--font-title);
+  font-size:2rem;
+  text-shadow:0 0 8px var(--cyan-glow);
+}
+.memory-card:hover .memory-card-back{
+  border-color:var(--cyan);
+  box-shadow:0 0 20px var(--cyan-glow);
+}
+.memory-card-front{
+  background:rgba(255,215,0,0.14);
+  border:2px solid var(--gold);
+  box-shadow:0 0 20px var(--gold-glow);
+  transform:rotateY(180deg);
+}
+
+/* ==============================
+   STAGE 3: CODE 256
+   ============================== */
+#stage3-screen{padding-top:75px}
+.question-card{
+  background:var(--bg-panel);
+  border-radius:var(--radius);
+  padding:24px;margin:15px 0;
+  border:1.5px solid rgba(0,240,255,0.3);
+  box-shadow:0 0 24px rgba(0,240,255,0.15), 0 8px 24px rgba(0,0,0,0.5);
+  backdrop-filter:blur(8px);
+}
+.question-num{
+  color:var(--cyan);font-family:var(--font-title);
+  font-size:1.15rem;margin-bottom:8px;letter-spacing:0.5px;
+  text-shadow:0 0 6px var(--cyan-glow);
+}
+.question-text{color:#FFF;font-size:1.18rem;font-weight:700;margin-bottom:22px;line-height:1.7}
+.options{display:flex;flex-direction:column;gap:12px}
+.option-btn{
+  width:100%;padding:14px 18px;
+  border:1.5px solid rgba(0,240,255,0.25);
+  border-radius:14px;
+  background:var(--bg-card);
+  color:var(--text-main);
+  font-family:var(--font);font-size:1.02rem;
+  cursor:pointer;text-align:right;transition:all .2s;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 0 10px rgba(0,240,255,0.08);
+}
+.option-btn:hover{
+  border-color:var(--cyan);
+  color:#FFF;
+  background:rgba(0,240,255,0.15);
+  box-shadow:0 0 18px var(--cyan-glow);
+}
+.option-btn.correct{
+  border-color:var(--green);
+  background:rgba(0,255,136,0.22);
+  color:#FFF;
+  box-shadow:0 0 22px var(--green);
+  text-shadow:0 0 6px var(--green);
+}
+.option-btn.wrong{
+  border-color:var(--pink);
+  background:rgba(255,0,85,0.22);
+  color:#FFF;
+  box-shadow:0 0 22px var(--pink);
+  text-shadow:0 0 6px var(--pink);
+}
+.option-btn.disabled{pointer-events:none;opacity:.6}
+.option-letter{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(0,240,255,0.12);
+  border:1px solid var(--cyan);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-title);
+  font-size:1.05rem;flex-shrink:0;
+  color:var(--cyan);
+  box-shadow:0 0 6px var(--cyan-glow);
+}
+
+/* ==============================
+   STAGE 4: BIT HUNTER
+   ============================== */
+#stage4-screen{padding-top:60px;padding-bottom:0;overflow:hidden}
+.hunter-area{
+  position:relative;width:100%;height:calc(100vh - 70px);
+  overflow:hidden;background:rgba(10,14,24,0.7);
+  border-radius:var(--radius) var(--radius) 0 0;
+  border:1.5px solid rgba(0,240,255,0.25);
+  box-shadow:inset 0 0 25px rgba(0,240,255,0.12);
+}
+.falling-bit{
+  position:absolute;width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-title);
+  font-size:1.8rem;cursor:pointer;
+  z-index:10;transition:transform .1s;
+  user-select:none;-webkit-user-select:none;
+}
+.falling-bit.bit-1{
+  background:rgba(255,215,0,0.2);
+  color:#FFF;
+  border:2px solid var(--gold);
+  box-shadow:0 0 20px var(--gold), 0 0 35px var(--gold-glow);
+  text-shadow:0 0 10px var(--gold);
+}
+.falling-bit.bit-0{
+  background:rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.6);
+  border:1.5px solid rgba(255,255,255,0.25);
+  box-shadow:0 0 10px rgba(255,255,255,0.15);
+}
+.falling-bit.bit-2{
+  background:rgba(255,140,0,0.22);
+  color:#FFF;
+  border:2px solid #FF8C00;
+  box-shadow:0 0 20px #FF8C00;
+  text-shadow:0 0 8px #FF8C00;
+}
+.falling-bit.bit-3{
+  background:rgba(255,0,85,0.25);
+  color:#FFF;
+  border:2.5px solid var(--pink);
+  box-shadow:0 0 22px var(--pink);
+  text-shadow:0 0 10px var(--pink);
+  animation:bit-danger-pulse .4s infinite alternate;
+}
+.falling-bit.bit-4{
+  background:rgba(189,0,255,0.25);
+  color:#FFF;
+  border:2.5px solid var(--purple);
+  box-shadow:0 0 22px var(--purple);
+  text-shadow:0 0 10px var(--purple);
+  animation:bit-danger-pulse .35s infinite alternate;
+}
+@keyframes bit-danger-pulse{
+  0%{transform:scale(1)}100%{transform:scale(1.1)}
+}
+.falling-bit.pop{animation:pop-out .25s forwards}
+@keyframes pop-out{0%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.falling-bit.wrong-tap{animation:wrong-flash .25s forwards}
+@keyframes wrong-flash{
+  0%{box-shadow:0 0 30px var(--pink);transform:scale(1.15);opacity:1}
+  100%{transform:scale(.4);opacity:0}
+}
+.hunter-score-float{
+  position:absolute;font-family:var(--font-title);
+  font-size:1.35rem;letter-spacing:1px;
+  animation:float-score 1s forwards;pointer-events:none;z-index:20;
+  text-shadow:0 0 10px currentColor;
+}
+@keyframes float-score{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
+
+/* ==============================
+   RESULTS SCREEN
+   ============================== */
+#results-screen{background:transparent}
+.results-title{
+  font-family:var(--font-title);
+  font-size:2.4rem;color:#FFF;text-align:center;
+  margin-bottom:14px;
+  text-shadow:0 0 15px var(--cyan), 0 0 30px var(--cyan-glow);
+}
+.results-player{
+  color:var(--gold);font-size:1.25rem;text-align:center;
+  margin-bottom:18px;text-shadow:0 0 8px var(--gold-glow);
+}
+.results-table{width:100%;border-collapse:separate;border-spacing:0 8px;margin:18px 0}
+.results-table th{
+  background:rgba(0,240,255,0.12);
+  color:var(--cyan);
+  padding:12px 14px;font-size:.9rem;border-radius:10px;
+  border:1px solid rgba(0,240,255,0.3);
+  text-shadow:0 0 6px var(--cyan);
+}
+.results-table td{
+  padding:12px 14px;font-size:.95rem;text-align:center;
+  background:var(--bg-panel);
+  border:1px solid rgba(0,240,255,0.18);
+  border-radius:10px;
+}
+.results-total{
+  text-align:center;margin:18px 0;padding:18px;border-radius:var(--radius);
+  background:var(--bg-panel);
+  border:2px solid var(--gold);
+  box-shadow:0 0 25px var(--gold-glow);
+  font-family:var(--font-title);
+  font-size:3rem;color:var(--gold);
+  text-shadow:0 0 16px var(--gold);
+}
+.results-rank{color:var(--cyan);text-align:center;font-size:1.05rem;margin-bottom:18px;text-shadow:0 0 8px var(--cyan-glow)}
+.star{color:var(--gold);font-size:1.2rem;text-shadow:0 0 8px var(--gold)}
+.results-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+
+/* ==============================
+   LEADERBOARD
+   ============================== */
+#leaderboard-screen{padding-top:20px;background:transparent}
+.lb-title{
+  font-family:var(--font-title);
+  font-size:2.3rem;color:var(--gold);text-align:center;
+  margin-bottom:18px;
+  text-shadow:0 0 16px var(--gold), 0 0 32px var(--gold-glow);
+}
+.lb-table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:.82rem}
+.lb-table th{
+  background:rgba(0,240,255,0.12);
+  color:var(--cyan);
+  padding:10px 8px;font-size:.78rem;position:sticky;top:0;border-radius:8px;
+  border:1px solid rgba(0,240,255,0.3);
+  text-shadow:0 0 6px var(--cyan);
+}
+.lb-table td{
+  padding:9px 6px;text-align:center;font-size:.82rem;
+  background:var(--bg-panel);
+  border:1px solid rgba(0,240,255,0.15);
+  border-radius:8px;
+}
+.lb-table tr.highlight td{
+  border-color:var(--gold);
+  background:rgba(255,215,0,0.12);
+  box-shadow:0 0 14px var(--gold-glow);
+}
+.rank-1{color:var(--gold);font-family:var(--font-title);font-size:1.3rem;text-shadow:0 0 8px var(--gold)}
+.rank-2{color:#CBD5E1;font-family:var(--font-title);font-size:1.2rem}
+.rank-3{color:#F59E0B;font-family:var(--font-title);font-size:1.2rem}
+.lb-empty{text-align:center;color:var(--text-dim);padding:36px;font-size:1.05rem}
+.lb-back{margin-top:22px;text-align:center}
+
+/* ==============================
+   CONFETTI
+   ============================== */
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden}
+.confetti-piece{position:absolute;width:10px;height:20px;top:-20px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{0%{transform:translateY(0) rotateZ(0deg);opacity:1}100%{transform:translateY(100vh) rotateZ(720deg);opacity:0}}
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+@media(max-width:400px){
+  .login-logo{font-size:2.1rem}
+  .team-members{grid-template-columns:1fr}
+  .decimal-display{font-size:4.2rem}
+  .bit-btn{width:42px;height:42px;font-size:1.4rem}
+  .bit-label{width:42px;font-size:.6rem}
+  .memory-grid{gap:8px}
+  .memory-card-front,.memory-card-back{font-size:1.8rem}
+  .falling-bit{width:46px;height:46px;font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ==============================
+     LOGIN SCREEN
+     ============================== -->
+<div id="login-screen" class="screen active">
+  <div class="login-particles" id="particles"></div>
+  <div class="container" style="position:relative;z-index:2">
+    <div class="login-logo">🎯 مأموریت ۲۵۶</div>
+    <div class="login-logo" style="font-size:1.3rem;margin-bottom:0">رمزگشایی بیت‌ها</div>
+    <div class="login-subtitle">Beyond the Bits | بهسازان ملت</div>
+
+    <div class="team-card">
+      <h3>👥 اعضای تیم</h3>
+      <div class="team-members">
+        <div class="member">👤 مسعود سرآبادانی <span class="badge">کاپیتان</span></div>
+        <div class="member">👤 فریماه رضایی</div>
+        <div class="member">👤 شایان خطیب شاد</div>
+        <div class="member">👤 حسین رضازاده</div>
+      </div>
+    </div>
+
+    <input type="text" id="player-name-input" class="login-input" placeholder="اسم خود را وارد کنید..." maxlength="30" autocomplete="off">
+
+    <div class="login-btns">
+      <button class="btn btn-red pulse" onclick="startGame()">🚀 شروع مأموریت</button>
+      <button class="btn btn-dark btn-sm" onclick="showLeaderboard()">🏆 لیدربورد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     TRANSITION SCREEN
+     ============================== -->
+<div id="transition-screen" class="screen">
+  <div class="transition-content">
+    <div class="transition-stage-num" id="trans-num"></div>
+    <div class="transition-stage-name" id="trans-name"></div>
+    <div class="transition-player" id="trans-player"></div>
+    <div class="transition-instructions" id="trans-instructions"></div>
+    <div class="transition-timer-info" id="trans-timer-info"></div>
+    <div class="transition-start-area">
+      <button class="btn btn-red pulse" id="trans-start-btn">🚀 شروع!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     STAGE 1: BINARY DECODER
+     ============================== -->
+<div id="stage1-screen" class="screen">
+  <div class="game-header">
+    <div class="timer-badge" id="s1-timer">30</div>
+    <div class="stage-info">مرحله ۱ — رمزگشایی باینری</div>
+    <div class="score-badge" id="s1-score">0</div>
+  </div>
+  <div class="container">
+    <div style="text-align:center;margin-top:10px;color:var(--light);font-size:.85rem" id="s1-player"></div>
+    <div class="decimal-display" id="s1-decimal">0</div>
+    <div class="bit-labels">
+      <div class="bit-label">128</div><div class="bit-label">64</div><div class="bit-label">32</div><div class="bit-label">16</div>
+      <div class="bit-label">8</div><div class="bit-label">4</div><div class="bit-label">2</div><div class="bit-label">1</div>
+    </div>
+    <div class="bits-row" id="s1-bits"></div>
+    <div class="binary-result" id="s1-binary-val">مقدار باینری: 00000000 = 0</div>
+    <div class="check-area">
+      <button class="btn btn-gold" onclick="checkBinary()">✅ بررسی</button>
+    </div>
+    <div id="s1-feedback"></div>
+  </div>
+</div>
+
+<!-- ==============================
+     STAGE 2: MEMORY GAME
+     ============================== -->
+<div id="stage2-screen" class="screen">
+  <div class="game-header">
+    <div class="timer-badge" id="s2-timer">60</div>
+    <div class="stage-info">مرحله ۲ — حافظه بیتی</div>
+    <div class="score-badge" id="s2-score">0</div>
+  </div>
+  <div class="container">
+    <div style="text-align:center;margin-top:10px;color:var(--light);font-size:.85rem" id="s2-player"></div>
+    <div class="memory-grid" id="s2-grid"></div>
+  </div>
+</div>
+
+<!-- ==============================
+     STAGE 3: CODE 256
+     ============================== -->
+<div id="stage3-screen" class="screen">
+  <div class="game-header">
+    <div class="timer-badge" id="s3-timer">45</div>
+    <div class="stage-info">مرحله ۳ — رمز ۲۵۶</div>
+    <div class="score-badge" id="s3-score">0</div>
+  </div>
+  <div class="container">
+    <div style="text-align:center;margin-top:10px;color:var(--light);font-size:.85rem" id="s3-player"></div>
+    <div id="s3-question-area"></div>
+  </div>
+</div>
+
+<!-- ==============================
+     STAGE 4: BIT HUNTER
+     ============================== -->
+<div id="stage4-screen" class="screen">
+  <div class="game-header">
+    <div class="timer-badge" id="s4-timer">30</div>
+    <div class="stage-info">مرحله ۴ — شکار بیت</div>
+    <div class="score-badge" id="s4-score">0</div>
+  </div>
+  <div class="hunter-area" id="s4-area"></div>
+</div>
+
+<!-- ==============================
+     RESULTS SCREEN
+     ============================== -->
+<div id="results-screen" class="screen">
+  <div class="container">
+    <div class="results-title">🏁 نتایج مأموریت</div>
+    <div class="results-player" id="res-player"></div>
+    <table class="results-table">
+      <thead><tr><th>مرحله</th><th>نام</th><th>امتیاز</th></tr></thead>
+      <tbody id="res-tbody"></tbody>
+    </table>
+    <div class="results-total" id="res-total">0</div>
+    <div class="results-rank" id="res-rank"></div>
+    <div class="results-btns">
+      <button class="btn btn-red" onclick="playAgain()">🔄 بازی دوباره</button>
+      <button class="btn btn-gold" onclick="showLeaderboard()">🏆 لیدربورد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     LEADERBOARD SCREEN
+     ============================== -->
+<div id="leaderboard-screen" class="screen">
+  <div class="container">
+    <div class="lb-title">🏆 لیدربورد</div>
+    <div id="lb-content"></div>
+    <div class="lb-back">
+      <button class="btn btn-dark" onclick="goHome()">🔙 بازگشت</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================
+     CONFETTI CONTAINER
+     ============================== -->
+<div class="confetti-container" id="confetti"></div>
+
+<script>
+/* ======================================================================
+   GAME STATE
+   ====================================================================== */
+const gameState = {
+  playerName: '',
+  scores: [0, 0, 0, 0],
+  currentStage: 0,
+  timerInterval: null,
+  lastRecordId: null
+};
+
+/* ======================================================================
+   AUDIO (Web Audio API)
+   ====================================================================== */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, duration, type = 'square') {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch (e) { /* audio not critical */ }
+}
+function playCorrect() { playTone(440, 0.1); setTimeout(() => playTone(880, 0.1), 100); }
+function playWrong() { playTone(200, 0.2, 'sawtooth'); }
+function playFanfare() { [440,554,659,880].forEach((f,i) => setTimeout(() => playTone(f, 0.15, 'triangle'), i*120)); }
+
+/* ======================================================================
+   INDEXED DB
+   ====================================================================== */
+const DB_NAME = 'Mission256DB';
+const STORE_NAME = 'gameRecords';
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) return resolve(db);
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE_NAME)) {
+        const store = d.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('totalScore', 'totalScore', { unique: false });
+      }
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e);
+  });
+}
+
+async function saveRecord(record) {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = d.transaction(STORE_NAME, 'readwrite');
+    const req = tx.objectStore(STORE_NAME).add(record);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+
+async function getAllRecords() {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = d.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+
+/* ======================================================================
+   SCREEN NAVIGATION
+   ====================================================================== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  clearInterval(gameState.timerInterval);
+  showScreen('login-screen');
+}
+
+function playAgain() {
+  gameState.scores = [0, 0, 0, 0];
+  gameState.currentStage = 0;
+  showScreen('login-screen');
+}
+
+/* ======================================================================
+   LOGIN & PARTICLES
+   ====================================================================== */
+function initParticles() {
+  const container = document.getElementById('particles');
+  container.innerHTML = '';
+  const chars = ['0', '1', '0', '1', '0', '1', '256'];
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = chars[Math.floor(Math.random() * chars.length)];
+    p.style.left = Math.random() * 100 + '%';
+    p.style.fontSize = (14 + Math.random() * 30) + 'px';
+    p.style.animationDuration = (8 + Math.random() * 15) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    container.appendChild(p);
+  }
+}
+
+function startGame() {
+  const name = document.getElementById('player-name-input').value.trim();
+  if (!name) {
+    document.getElementById('player-name-input').style.borderColor = '#E74C3C';
+    document.getElementById('player-name-input').setAttribute('placeholder', '⚠️ لطفاً اسم خود را وارد کنید');
+    return;
+  }
+  gameState.playerName = name;
+  gameState.scores = [0, 0, 0, 0];
+  gameState.currentStage = 0;
+  showTransition(1, 'رمزگشایی باینری', () => startStage1());
+}
+
+/* ======================================================================
+   TRANSITION
+   ====================================================================== */
+const STAGE_INSTRUCTIONS = {
+  1: {
+    title: '📖 قوانین بازی',
+    timer: '⏱️ زمان: ۳۰ ثانیه',
+    rules: [
+      { icon: '🔢', text: 'یک <strong>عدد دسیمال</strong> (۰ تا ۲۵۵) نمایش داده میشه' },
+      { icon: '👆', text: 'روی <strong>۸ دکمه بیت</strong> کلیک کن تا معادل باینری رو بسازی' },
+      { icon: '✅', text: 'دکمه <strong>«بررسی»</strong> رو بزن — اگه درست باشه <strong>+۱۰ امتیاز</strong>' },
+      { icon: '🔄', text: 'هر چی <strong>سریع‌تر</strong> جواب بدی، سؤال‌های بیشتری می‌رسی!' }
+    ]
+  },
+  2: {
+    title: '📖 قوانین بازی',
+    timer: '⏱️ زمان: ۶۰ ثانیه',
+    rules: [
+      { icon: '🃏', text: '<strong>۱۶ کارت</strong> (۸ جفت) وجود داره — پشتشون رو نمی‌بینی' },
+      { icon: '👆', text: 'روی هر کارت کلیک کن تا <strong>برگرده</strong>' },
+      { icon: '🎯', text: 'دو کارت <strong>یکسان</strong> پیدا کن — هر جفت <strong>+۱۵ امتیاز</strong>' },
+      { icon: '🧠', text: 'اگه جفت نباشن، دوباره <strong>برمی‌گردن</strong> — حافظه‌ات رو به کار بنداز!' }
+    ]
+  },
+  3: {
+    title: '📖 قوانین بازی',
+    timer: '⏱️ زمان: ۴۵ ثانیه',
+    rules: [
+      { icon: '🧠', text: '<strong>بانک بیش از ۱۰۰ سؤال</strong> تخصصی کامپیوتر، باینری، شبکه، دیتابیس و فین‌تک!' },
+      { icon: '🔤', text: 'هر سؤال ۴ گزینه دارد — در هر دست بازی، سؤال‌های <strong>جدید و غیرتکراری</strong> می‌آید.' },
+      { icon: '✅', text: 'هر پاسخ درست: <strong>+۲۰ امتیاز</strong>' },
+      { icon: '⚡', text: '<strong>۴۵ ثانیه زمان داری</strong> — تا جایی که می‌توانی سریع‌تر پاسخ بده تا امتیاز بیشتری کسب کنی!' }
+    ]
+  },
+  4: {
+    title: '📖 قوانین بازی',
+    timer: '⏱️ زمان: ۳۰ ثانیه',
+    rules: [
+      { icon: '🌧️', text: 'اعداد باینری و داده‌ها از بالا سرازیر میشن' },
+      { icon: '✨', text: 'فقط روی <strong>۱</strong>‌ها بزن! → هر ۱ درست: <strong>+۵ امتیاز</strong>' },
+      { icon: '🚫', text: 'روی <strong>۰</strong> نزن! → هر ۰ اشتباه: <strong>-۳ امتیاز</strong>' },
+      { icon: '⚡', text: '<strong>اعداد ۲، ۳ و ۴</strong> با <strong>سرعت بالا</strong> سقوط می‌کنن! تله هستن و نباید بزنی: <strong>-۵ امتیاز</strong>' },
+      { icon: '💡', text: '<strong>راهنما:</strong> ۱ها طلایی، ۰ها نقره‌ای، و اعداد ۲ تا ۴ رنگی و بسیار سریع هستن!' }
+    ]
+  }
+};
+
+function showTransition(num, name, callback) {
+  document.getElementById('trans-num').textContent = num;
+  document.getElementById('trans-name').textContent = name;
+  document.getElementById('trans-player').textContent = '🎮 ' + gameState.playerName;
+
+  // Build instruction card
+  const info = STAGE_INSTRUCTIONS[num];
+  const instrEl = document.getElementById('trans-instructions');
+  instrEl.innerHTML = `
+    <h4>${info.title}</h4>
+    ${info.rules.map(r => `
+      <div class="trans-rule">
+        <div class="rule-icon">${r.icon}</div>
+        <div class="rule-text">${r.text}</div>
+      </div>
+    `).join('')}
+  `;
+
+  document.getElementById('trans-timer-info').textContent = info.timer;
+
+  showScreen('transition-screen');
+
+  // Wait for button click only (no auto-proceed)
+  const btn = document.getElementById('trans-start-btn');
+  const newBtn = btn.cloneNode(true); // remove old listeners
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', () => {
+    callback();
+  });
+}
+
+/* ======================================================================
+   TIMER UTILITY
+   ====================================================================== */
+function startTimer(seconds, elId, onEnd) {
+  let remaining = seconds;
+  const el = document.getElementById(elId);
+  el.textContent = remaining;
+  el.classList.remove('urgent');
+
+  clearInterval(gameState.timerInterval);
+  gameState.timerInterval = setInterval(() => {
+    remaining--;
+    el.textContent = remaining;
+    if (remaining <= 5) el.classList.add('urgent');
+    if (remaining <= 0) {
+      clearInterval(gameState.timerInterval);
+      onEnd();
+    }
+  }, 1000);
+}
+
+/* ======================================================================
+   STAGE 1: BINARY DECODER
+   ====================================================================== */
+let s1Target = 0;
+let s1Locked = false;
+
+function startStage1() {
+  gameState.scores[0] = 0;
+  s1Locked = false;
+  showScreen('stage1-screen');
+  document.getElementById('s1-player').textContent = '🎮 ' + gameState.playerName;
+  document.getElementById('s1-score').textContent = '0';
+  document.getElementById('s1-feedback').innerHTML = '';
+  initBitButtons();
+  newBinaryRound();
+  startTimer(30, 's1-timer', endStage1);
+}
+
+function initBitButtons() {
+  const container = document.getElementById('s1-bits');
+  container.innerHTML = '';
+  for (let i = 7; i >= 0; i--) {
+    const btn = document.createElement('button');
+    btn.className = 'bit-btn';
+    btn.textContent = '0';
+    btn.dataset.bit = i;
+    btn.addEventListener('click', () => toggleBit(btn, i));
+    container.appendChild(btn);
+  }
+}
+
+function toggleBit(btn, idx) {
+  if (s1Locked) return;
+  const isActive = btn.classList.toggle('active');
+  btn.textContent = isActive ? '1' : '0';
+  updateBinaryDisplay();
+}
+
+function updateBinaryDisplay() {
+  const bits = document.querySelectorAll('#s1-bits .bit-btn');
+  let binary = '';
+  let value = 0;
+  bits.forEach(b => {
+    binary += b.textContent;
+    value = (value << 1) | parseInt(b.textContent);
+  });
+  document.getElementById('s1-binary-val').textContent = `مقدار باینری: ${binary} = ${value}`;
+}
+
+function newBinaryRound() {
+  s1Target = Math.floor(Math.random() * 256);
+  document.getElementById('s1-decimal').textContent = s1Target;
+  document.querySelectorAll('#s1-bits .bit-btn').forEach(b => {
+    b.classList.remove('active');
+    b.textContent = '0';
+  });
+  updateBinaryDisplay();
+  document.getElementById('s1-feedback').innerHTML = '';
+  s1Locked = false;
+}
+
+function checkBinary() {
+  if (s1Locked) return;
+  const bits = document.querySelectorAll('#s1-bits .bit-btn');
+  let value = 0;
+  bits.forEach(b => { value = (value << 1) | parseInt(b.textContent); });
+
+  const fb = document.getElementById('s1-feedback');
+  if (value === s1Target) {
+    gameState.scores[0] += 10;
+    document.getElementById('s1-score').textContent = gameState.scores[0];
+    fb.innerHTML = '<div class="feedback correct">✅ آفرین! +۱۰ امتیاز</div>';
+    playCorrect();
+    s1Locked = true;
+    setTimeout(newBinaryRound, 800);
+  } else {
+    const correctBin = s1Target.toString(2).padStart(8, '0');
+    fb.innerHTML = `<div class="feedback wrong">❌ اشتباه! جواب درست: ${correctBin}</div>`;
+    playWrong();
+    document.getElementById('s1-bits').style.animation = 'shake .4s';
+    setTimeout(() => document.getElementById('s1-bits').style.animation = '', 400);
+    s1Locked = true;
+    setTimeout(newBinaryRound, 1200);
+  }
+}
+
+function endStage1() {
+  showTransition(2, 'حافظه بیتی', () => startStage2());
+}
+
+/* ======================================================================
+   STAGE 2: MEMORY GAME
+   ====================================================================== */
+const EMOJIS = ['💳', '🏦', '💰', '🔐', '📱', '💻', '🔒', '⚡'];
+let memoryCards = [];
+let flippedCards = [];
+let memoryLocked = false;
+
+function startStage2() {
+  gameState.scores[1] = 0;
+  memoryLocked = false;
+  flippedCards = [];
+  showScreen('stage2-screen');
+  document.getElementById('s2-player').textContent = '🎮 ' + gameState.playerName;
+  document.getElementById('s2-score').textContent = '0';
+  buildMemoryGrid();
+  startTimer(60, 's2-timer', endStage2);
+}
+
+function buildMemoryGrid() {
+  const grid = document.getElementById('s2-grid');
+  grid.innerHTML = '';
+  memoryCards = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+  memoryCards.forEach((emoji, idx) => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <div class="memory-card-inner">
+        <div class="memory-card-back">❓</div>
+        <div class="memory-card-front">${emoji}</div>
+      </div>`;
+    card.addEventListener('click', () => flipCard(card, idx));
+    grid.appendChild(card);
+  });
+}
+
+function flipCard(card, idx) {
+  if (memoryLocked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  card.classList.add('flipped');
+  flippedCards.push({ card, idx });
+
+  if (flippedCards.length === 2) {
+    memoryLocked = true;
+    const [a, b] = flippedCards;
+    if (memoryCards[a.idx] === memoryCards[b.idx]) {
+      a.card.classList.add('matched');
+      b.card.classList.add('matched');
+      gameState.scores[1] += 15;
+      document.getElementById('s2-score').textContent = gameState.scores[1];
+      playCorrect();
+      flippedCards = [];
+      memoryLocked = false;
+      // Check if all matched
+      if (document.querySelectorAll('.memory-card.matched').length === 16) {
+        clearInterval(gameState.timerInterval);
+        setTimeout(endStage2, 500);
+      }
+    } else {
+      playWrong();
+      setTimeout(() => {
+        a.card.classList.remove('flipped');
+        b.card.classList.remove('flipped');
+        flippedCards = [];
+        memoryLocked = false;
+      }, 900);
+    }
+  }
+}
+
+function endStage2() {
+  showTransition(3, 'رمز ۲۵۶', () => startStage3());
+}
+
+/* ======================================================================
+   STAGE 3: CODE 256 (Quiz — 105 Question Bank)
+   ====================================================================== */
+const ALL_QUESTIONS = [
+  { q: 'عدد ۲۵۶ در مبنای ۲ چند رقم دارد؟', opts: ['۷', '۸', '۹', '۱۰'], correct: 2 },
+  { q: 'کدام عدد توان ۲ نیست؟', opts: ['۱۲۸', '۲۵۶', '۱۰۰', '۵۱۲'], correct: 2 },
+  { q: 'نتیجه 11111111 در مبنای ۲ به مبنای ۱۰ چیست؟', opts: ['۲۵۴', '۲۵۵', '۲۵۶', '۱۲۸'], correct: 1 },
+  { q: '۱ بایت چند بیت است؟', opts: ['۴', '۸', '۱۶', '۳۲'], correct: 1 },
+  { q: 'حاصل XOR دو بیت یکسان چیست؟', opts: ['۰', '۱', '۲', 'نامشخص'], correct: 0 },
+  { q: 'عدد ۱۰۱۰ در مبنای ۲ معادل کدام عدد در مبنای ۱۰ است؟', opts: ['۸', '۱۰', '۱۲', '۱۴'], correct: 1 },
+  { q: 'حداکثر عددی که با یک بایت بدون علامت می‌توان نمایش داد چیست؟', opts: ['۱۲۷', '۱۲۸', '۲۵۵', '۲۵۶'], correct: 2 },
+  { q: '۲ به توان ۸ برابر با چه عددی است؟', opts: ['۱۲۸', '۲۵۶', '۵۱۲', '۱۰۲۴'], correct: 1 },
+  { q: 'عدد ۱۶ در مبنای ۲ چگونه نوشته می‌شود؟', opts: ['1000', '10000', '1111', '100000'], correct: 1 },
+  { q: 'نیم‌بایت (Nibble) شامل چند بیت است؟', opts: ['۲', '۴', '۶', '۸'], correct: 1 },
+  { q: 'حاصل جمع باینری 1 + 1 چیست؟', opts: ['1', '2', '10', '11'], correct: 2 },
+  { q: 'عدد ۱۲۸ در نمایش باینری چند صفر در انتها دارد؟', opts: ['۵', '۶', '۷', '۸'], correct: 2 },
+  { q: 'نمایش باینری عدد ۵ چیست؟', opts: ['100', '101', '110', '111'], correct: 1 },
+  { q: 'حاصل AND منطقی بین دو بیت 1 و 0 چیست؟', opts: ['۰', '۱', '-۱', 'نامشخص'], correct: 0 },
+  { q: 'حاصل OR منطقی بین دو بیت 0 و 0 چیست؟', opts: ['۰', '۱', 'true', 'نامشخص'], correct: 0 },
+  { q: 'حاصل NOT بیت 1 چیست؟', opts: ['۰', '۱', '-۱', '۲'], correct: 0 },
+  { q: 'کدام گیت منطقی خروجی معکوس AND تولید می‌کند؟', opts: ['OR', 'NOR', 'NAND', 'XOR'], correct: 2 },
+  { q: 'در جبر بولی، حاصل A OR 1 همیشه برابر با چیست؟', opts: ['A', '۰', '۱', 'NOT A'], correct: 2 },
+  { q: 'در جبر بولی، حاصل A AND 0 همیشه برابر با چیست؟', opts: ['A', '۰', '۱', 'NOT A'], correct: 1 },
+  { q: 'یک کیلوبایت (KB) استاندارد باینری چند بایت است؟', opts: ['۵۰۰', '۱۰۰۰', '۱۰۲۴', '۲۰۴۸'], correct: 2 },
+  { q: 'یک مگابایت دقیقاً چند کیلوبایت است؟', opts: ['۵۱۲', '۱۰۰۰', '۱۰۲۴', '۲۰۴۸'], correct: 2 },
+  { q: 'یک ترابایت معادل چند گیگابایت است؟', opts: ['۲۵۶', '۵۱۲', '۱۰۲۴', '۲۰۴۸'], correct: 2 },
+  { q: 'کوچکترین واحد ذخیره‌سازی داده در کامپیوتر چیست؟', opts: ['بایت', 'بیت', 'کلمه (Word)', 'نیبل'], correct: 1 },
+  { q: 'عدد هگزادسیمال FF در مبنای ۱۰ معادل چیست؟', opts: ['۱۲۸', '۲۵۴', '۲۵۵', '۲۵۶'], correct: 2 },
+  { q: 'عدد هگزادسیمال 10 در مبنای ۱۰ معادل چه عددی است؟', opts: ['۱۰', '۱۲', '۱۶', '۲۰'], correct: 2 },
+  { q: 'پیشوند رایج اعداد در مبنای ۱۶ در برنامه‌نویسی چیست؟', opts: ['0b', '0o', '0x', '0h'], correct: 2 },
+  { q: 'نمایش باینری عدد ۷ چیست؟', opts: ['101', '110', '111', '1000'], correct: 2 },
+  { q: '۲ به توان ۱۰ برابر با چه عددی است؟', opts: ['۵۱۲', '۱۰۲۴', '۲۰۴۸', '۴۰۹۶'], correct: 1 },
+  { q: 'حاصل ضرب باینری 10 در 10 چیست؟', opts: ['10', '20', '100', '1000'], correct: 2 },
+  { q: '۲ به توان ۴ برابر با کدام گزینه است؟', opts: ['۸', '۱۲', '۱۶', '۳۲'], correct: 2 },
+  { q: 'گیت XOR چه زمانی خروجی ۱ تولید می‌کند؟', opts: ['هر دو ورودی ۱ باشند', 'هر دو ورودی ۰ باشند', 'ورودی‌ها متفاوت باشند', 'همیشه'], correct: 2 },
+  { q: 'گیت NOR چه زمانی خروجی ۱ می‌دهد؟', opts: ['هر دو ورودی ۰ باشند', 'هر دو ورودی ۱ باشند', 'یکی از ورودی‌ها ۱ باشد', 'هیچگاه'], correct: 0 },
+  { q: 'عملیات شیفت به چپ (<<) روی عدد باینری معادل چیست؟', opts: ['تقسیم بر ۲', 'ضرب در ۲', 'جذر گرفتن', 'مکمل گرفتن'], correct: 1 },
+  { q: 'عملیات شیفت به راست (>>) روی عدد باینری معادل چیست؟', opts: ['ضرب در ۲', 'تقسیم بر ۲', 'توان ۲', 'صفر کردن'], correct: 1 },
+  { q: '۲ به توان ۵ برابر با کدام گزینه است؟', opts: ['۱۶', '۳۲', '۶۴', '۱۲۸'], correct: 1 },
+  { q: 'عدد باینری 10000000 در مبنای ۱۰ معادل چیست؟', opts: ['۶۴', '۱۲۸', '۲۵۶', '۵۱۲'], correct: 1 },
+  { q: 'عدد باینری 01000000 در مبنای ۱۰ معادل چیست؟', opts: ['۳۲', '۶۴', '۱۲۸', '۲۵۶'], correct: 1 },
+  { q: 'بزرگترین عدد باینری ۴ بیتی چیست؟', opts: ['1000', '1100', '1110', '1111'], correct: 3 },
+  { q: 'حاصل جمع باینری 01 + 01 چیست؟', opts: ['02', '10', '11', '00'], correct: 1 },
+  { q: 'با ۸ بیت چند وضعیت یا عدد متمایز می‌توان ایجاد کرد؟', opts: ['۱۲۸', '۲۵۵', '۲۵۶', '۵۱۲'], correct: 2 },
+  { q: 'مرتبه زمانی جستجوی دودویی (Binary Search) چیست؟', opts: ['O(1)', 'O(log n)', 'O(n)', 'O(n^2)'], correct: 1 },
+  { q: 'ساختار داده LIFO (آخرین ورودی، اولین خروجی) کدام است؟', opts: ['صف (Queue)', 'پشته (Stack)', 'درخت (Tree)', 'گراف (Graph)'], correct: 1 },
+  { q: 'ساختار داده FIFO (اولین ورودی، اولین خروجی) کدام است؟', opts: ['صف (Queue)', 'پشته (Stack)', 'آرایه (Array)', 'هیپ (Heap)'], correct: 0 },
+  { q: 'پیچیدگی زمانی دسترسی به عنصر در آرایه با استفاده از ایندکس چیست؟', opts: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'], correct: 0 },
+  { q: 'مرتبه زمانی الگوریتم QuickSort در حالت میانگین چیست؟', opts: ['O(n)', 'O(n log n)', 'O(n^2)', 'O(2^n)'], correct: 1 },
+  { q: 'در یک درخت جستجوی دودویی (BST)، کلید فرزند چپ نسبت به ریشه چگونه است؟', opts: ['بزرگتر', 'کوچکتر', 'برابر', 'نامشخص'], correct: 1 },
+  { q: 'کدام ساختار داده برای پیوند عناصر از اشاره‌گر استفاده می‌کند؟', opts: ['آرایه', 'لیست پیوندی', 'ماتریس', 'رشته'], correct: 1 },
+  { q: 'ساختار داده‌ای که امکان جستجو با کلید در مرتبه میانگین O(1) را می‌دهد چیست؟', opts: ['Hash Table', 'Linked List', 'Binary Tree', 'Stack'], correct: 0 },
+  { q: 'الگوریتم دایکسترا (Dijkstra) برای چه منظوری کاربرد دارد؟', opts: ['مرتب‌سازی', 'کوتاه‌ترین مسیر در گراف', 'رمزنگاری', 'فشرده‌سازی'], correct: 1 },
+  { q: 'مرتبه زمانی جستجوی خطی (Linear Search) در بدترین حالت چیست؟', opts: ['O(1)', 'O(log n)', 'O(n)', 'O(n^2)'], correct: 2 },
+  { q: 'کدام الگوریتم مرتب‌سازی از راهبرد تقسیم و حل (Divide & Conquer) بهره می‌برد؟', opts: ['Bubble Sort', 'Merge Sort', 'Insertion Sort', 'Selection Sort'], correct: 1 },
+  { q: 'پیمایش سطح‌به‌سطح گراف (BFS) از کدام ساختار داده استفاده می‌کند؟', opts: ['پشته (Stack)', 'صف (Queue)', 'هیپ (Heap)', 'درخت (Tree)'], correct: 1 },
+  { q: 'پیمایش عمقی گراف (DFS) مبتنی بر کدام ساختار داده است؟', opts: ['صف (Queue)', 'پشته (Stack)', 'لیست پیوندی', 'دیکشنری'], correct: 1 },
+  { q: 'یک درخت با n گره دارای دقیقاً چند یال است؟', opts: ['n', 'n - 1', 'n + 1', '2n'], correct: 1 },
+  { q: 'در علم کامپیوتر مفهوم بازگشت (Recursion) به چه معناست؟', opts: ['حلقه نامتناهی', 'فراخوانی تابع توسط خودش', 'تخصیص حافظه پویا', 'مدیریت خطا'], correct: 1 },
+  { q: 'پورت استاندارد پروتکل امن HTTPS چند است؟', opts: ['۸۰', '۸۰۸۰', '۴۴۳', '۲۲'], correct: 2 },
+  { q: 'پورت استاندارد پروتکل وب HTTP چند است؟', opts: ['۲۱', '۲۵', '۸۰', '۴۴۳'], correct: 2 },
+  { q: 'کد وضعیت HTTP برای خطای صفحه پیدا نشد (Not Found) چیست؟', opts: ['۲۰۰', '۳۰۱', '۴۰۳', '۴۰۴'], correct: 3 },
+  { q: 'کد وضعیت HTTP برای پاسخ موفقیت‌آمیز (OK) چیست؟', opts: ['۲۰۰', '۲۰۱', '۳۰۱', '۴۰۴'], correct: 0 },
+  { q: 'کد وضعیت HTTP برای خطای داخلی سرور چیست؟', opts: ['۴۰۰', '۴۰۱', '۴۰۳', '۵۰۰'], correct: 3 },
+  { q: 'پروتکل انتقال اتصال‌گرا و تضمین‌کننده تحویل داده در اینترنت چیست؟', opts: ['UDP', 'TCP', 'IP', 'ICMP'], correct: 1 },
+  { q: 'پروتکل انتقال بدون اتصال و مناسب پخش زنده (Streaming) چیست؟', opts: ['TCP', 'UDP', 'HTTP', 'FTP'], correct: 1 },
+  { q: 'سامانه‌ای که نام دامنه اینترنتی را به آدرس IP تبدیل می‌کند چیست؟', opts: ['DHCP', 'DNS', 'NAT', 'ARP'], correct: 1 },
+  { q: 'آدرس اینترنتی IPv4 از چند بیت تشکیل شده است؟', opts: ['۱۶ بیت', '۳۲ بیت', '۶۴ بیت', '۱۲۸ بیت'], correct: 1 },
+  { q: 'آدرس اینترنتی IPv6 از چند بیت تشکیل شده است؟', opts: ['۳۲ بیت', '۶۴ بیت', '۱۲۸ بیت', '۲۵۶ بیت'], correct: 2 },
+  { q: 'آدرس استاندارد لوکال‌هاست (Localhost) در IPv4 چیست؟', opts: ['192.168.1.1', '10.0.0.1', '127.0.0.1', '0.0.0.0'], correct: 2 },
+  { q: 'پورت پیش‌فرض سرویس SSH چیست؟', opts: ['۲۱', '۲۲', '۲۳', '۲۵'], correct: 1 },
+  { q: 'پروتکل استاندارد ارسال ایمیل چیست؟', opts: ['POP3', 'IMAP', 'SMTP', 'SNMP'], correct: 2 },
+  { q: 'متد رایج HTTP برای ارسال اطلاعات به سرور جهت ثبت چیست؟', opts: ['GET', 'POST', 'HEAD', 'OPTIONS'], correct: 1 },
+  { q: 'متد HTTP برای دریافت داده از سرور بدون تغییر در وضعیت چیست؟', opts: ['GET', 'PUT', 'DELETE', 'POST'], correct: 0 },
+  { q: 'فرمت سبک و استاندارد تبادل داده متنی در وب امروزی چیست؟', opts: ['XML', 'YAML', 'JSON', 'CSV'], correct: 2 },
+  { q: 'پروتکل وب برای ارتباط دوطرفه، بلادرنگ و پایدار با سرور چیست؟', opts: ['HTTP/1.1', 'WebSocket', 'REST', 'SOAP'], correct: 1 },
+  { q: 'طول خروجی الگوریتم هش SHA-256 چند بیت است؟', opts: ['۱۲۸', '۱۹۲', '۲۵۶', '۵۱۲'], correct: 2 },
+  { q: 'ویژگی کلیدی توابع درهم‌ساز (هش) چیست؟', opts: ['قابل بازگشت بودن', 'یک‌طرفه و غیرقابل بازگشت بودن', 'وابسته به رمز عبور بودن', 'کاهش امنیت'], correct: 1 },
+  { q: 'در رمزنگاری نامتقارن، کدام کلید برای عموم ارسال می‌شود؟', opts: ['کلید خصوصی', 'کلید عمومی', 'کلید متقارن', 'کلید جلسه'], correct: 1 },
+  { q: 'در رمزنگاری نامتقارن، کدام کلید باید نزد مالک محرمانه بماند؟', opts: ['کلید عمومی', 'کلید خصوصی', 'کلید هش', 'گواهی دیجیتال'], correct: 1 },
+  { q: 'دفترکل توزیع‌شده و تغییرناپذیر پایه‌ای کدام فناوری است؟', opts: ['رایانش ابری', 'بلاک‌چین (Blockchain)', 'هوش مصنوعی', 'واقعیت مجازی'], correct: 1 },
+  { q: 'کدام الگوریتم معروف‌ترین استاندارد رمزنگاری متقارن دنیاست؟', opts: ['RSA', 'AES', 'SHA', 'MD5'], correct: 1 },
+  { q: 'پروتکل امنیتی جانشین SSL برای ایمن‌سازی ارتباطات وب چیست؟', opts: ['TLS', 'SSH', 'VPN', 'IPSec'], correct: 0 },
+  { q: 'امضای دیجیتال چه ویژگی‌ای را در اسناد الکترونیکی تضمین می‌کند؟', opts: ['اصالت و عدم انکار', 'فشرده‌سازی', 'سرعت ارسال', 'زیبایی ظاهری'], correct: 0 },
+  { q: 'حمله فریب کاربر جهت سرقت اطلاعات محرمانه از طریق ایمیل یا لینک جعلی چیست؟', opts: ['DDoS', 'Phishing (فیشینگ)', 'Man-in-the-Middle', 'Brute Force'], correct: 1 },
+  { q: 'احراز هویت دومرحله‌ای معمولاً با چه نامی شناخته می‌شود؟', opts: ['2FA', 'SSO', 'OAuth', 'JWT'], correct: 0 },
+  { q: 'حمله ارسال سیل‌آسای ترافیک برای از کار انداختن سرور چه نام دارد؟', opts: ['SQL Injection', 'XSS', 'DDoS', 'Trojan'], correct: 2 },
+  { q: 'موثرترین راه مقابله با حمله SQL Injection در برنامه‌نویسی چیست؟', opts: ['استفاده از HTTPS', 'استفاده از Prepared Statements', 'فشرده‌سازی دیتابیس', 'تغییر پورت سرور'], correct: 1 },
+  { q: 'کدام دستور در SQL برای خواندن رکوردها از جدول استفاده می‌شود؟', opts: ['INSERT', 'UPDATE', 'SELECT', 'DELETE'], correct: 2 },
+  { q: 'پایگاه‌های داده غیررابطه‌ای مانند Redis و MongoDB در کدام دسته قرار دارند؟', opts: ['RDBMS', 'NoSQL', 'Graph only', 'Flat file'], correct: 1 },
+  { q: 'ویژگی‌های ACID در پایگاه داده ضامن چه چیزی هستند؟', opts: ['صحت و پایایی تراکنش‌ها', 'افزایش سرعت گرافیک', 'فشرده‌سازی فایل‌ها', 'ارتباط شبکه'], correct: 0 },
+  { q: 'حرف A در مخفف ویژگی‌های ACID مخفف چیست؟', opts: ['Availability', 'Atomicity (تجزیه‌ناپذیری)', 'Accuracy', 'Authentication'], correct: 1 },
+  { q: 'شماره استاندارد بین‌المللی حساب بانکی در ایران چه نامیده می‌شود؟', opts: ['شبا (IBAN)', 'کد سوییفت', 'شماره کارت', 'کد ملی'], correct: 0 },
+  { q: 'شماره شبا در ایران شامل چند کاراکتر با احتساب IR است؟', opts: ['۱۶', '۲۲', '۲۴', '۲۶'], correct: 3 },
+  { q: 'سامانه پرداخت شاپرک مخفف چیست؟', opts: ['شبکه الکترونیکی پرداخت کارت', 'شرکت پردازش الکترونیک کارت', 'شبکه پذیرندگان کارت', 'سامانه پرداخت یکپارچه'], correct: 0 },
+  { q: 'دستگاه کارتخوان (POS) مخفف کدام عبارت است؟', opts: ['Payment of System', 'Point of Sale', 'Processing on Server', 'Pin on Service'], correct: 1 },
+  { q: 'سامانه تسویه ناخالص آنی بین‌بانکی بانک مرکزی چه نام دارد؟', opts: ['ساتنا', 'پایا', 'شاپرک', 'شتاب'], correct: 0 },
+  { q: 'سامانه پایاپای الکترونیکی بین‌بانکی برای تسویه دسته‌ای چه نام دارد؟', opts: ['پایا', 'ساتنا', 'شتاب', 'سایت'], correct: 0 },
+  { q: 'کدام ستون در جدول پایگاه داده هر سطر را به شکل منحصر‌به‌فرد مشخص می‌کند؟', opts: ['Foreign Key', 'Primary Key (کلید اصلی)', 'Index Key', 'View Key'], correct: 1 },
+  { q: 'دستور لغو و بازگرداندن تغییرات تراکنش در SQL چیست؟', opts: ['COMMIT', 'ROLLBACK', 'DROP', 'REVOKE'], correct: 1 },
+  { q: 'دستور تایید نهایی و دائمی کردن تغییرات تراکنش در SQL چیست؟', opts: ['COMMIT', 'SAVEPOINT', 'GRANT', 'APPLY'], correct: 0 },
+  { q: 'مدت زمانی که یک سرویس بدون وقفه و قطعی در دسترس است چه نام دارد؟', opts: ['Downtime', 'Latency', 'Uptime', 'Throughput'], correct: 2 },
+  { q: 'کد امنیتی ۳ یا ۴ رقمی روی کارت‌های بانکی چیست؟', opts: ['PIN1', 'PIN2', 'CVV2', 'IBAN'], correct: 2 },
+  { q: 'درگاه پرداخت اینترنتی به اختصار با چه نامی شناخته می‌شود؟', opts: ['POS', 'IPG', 'ATM', 'NFC'], correct: 1 },
+  { q: 'شرکت فناوری اطلاعات و مجری سیستم‌های نرم‌افزاری بانک ملت چیست؟', opts: ['بهسازان ملت', 'شاپرک', 'سداد', 'توسن'], correct: 0 },
+  { q: 'پروتکل ارتباط بی‌سیم در فاصله بسیار کوتاه برای پرداخت‌های موبایلی چیست؟', opts: ['Bluetooth', 'Wi-Fi', 'NFC', 'Zigbee'], correct: 2 },
+  { q: 'کدام مفهوم نشان‌دهنده دسترسی اشخاص ثالث به خدمات بانکی از طریق API است؟', opts: ['Core Banking', 'Open Banking (بانکداری باز)', 'Closed Banking', 'Private Cloud'], correct: 1 },
+  { q: 'سیستم خودپرداز بانکی مخفف Automated Teller Machine چیست؟', opts: ['ATM', 'POS', 'CRM', 'ERP'], correct: 0 },
+  { q: 'تعداد ارقام شماره کارت‌های استاندارد عضو شتاب در ایران چند رقم است؟', opts: ['۱۲', '۱۴', '۱۶', '۱۸'], correct: 2 }
+];
+
+// True Fisher-Yates shuffle algorithm
+function fisherYatesShuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Generate dynamic procedural questions with random numbers so every attempt is fresh
+function generateProceduralQuestion() {
+  const type = Math.floor(Math.random() * 4);
+  if (type === 0) {
+    // Random binary to decimal (up to 63)
+    const val = 10 + Math.floor(Math.random() * 54);
+    const bin = val.toString(2);
+    const wrong1 = val + (Math.random() > 0.5 ? 2 : -2);
+    const wrong2 = val + (Math.random() > 0.5 ? 4 : -4);
+    const wrong3 = val + (Math.random() > 0.5 ? 8 : -8);
+    return {
+      q: `معادل دسیمال عدد باینری ${bin} چیست؟`,
+      opts: [String(val), String(wrong1), String(wrong2), String(wrong3)],
+      correct: 0
+    };
+  } else if (type === 1) {
+    // Random power of 2 sum
+    const p1 = Math.pow(2, 2 + Math.floor(Math.random() * 4)); // 4, 8, 16, 32
+    const p2 = Math.pow(2, 2 + Math.floor(Math.random() * 4));
+    const sum = p1 + p2;
+    return {
+      q: `حاصل جمع توان‌های ۲ یعنی ${p1} + ${p2} برابر با چیست؟`,
+      opts: [String(sum), String(sum - 2), String(sum + 4), String(sum * 2)],
+      correct: 0
+    };
+  } else if (type === 2) {
+    // Random bit shift
+    const n = [2, 4, 8, 16][Math.floor(Math.random() * 4)];
+    const res = n * 2;
+    return {
+      q: `اگر عدد ${n} را یک بیت به سمت چپ شیفت دهیم (Left Shift)، حاصل چیست؟`,
+      opts: [String(res), String(n / 2), String(n + 1), String(n * 4)],
+      correct: 0
+    };
+  } else {
+    // Random KB to Byte
+    const kb = [2, 4, 8, 16][Math.floor(Math.random() * 4)];
+    const bytes = kb * 1024;
+    return {
+      q: `${kb} کیلوبایت (KB) دقیقاً شامل چند بایت است؟`,
+      opts: [String(bytes), String(kb * 1000), String(bytes / 2), String(bytes + 512)],
+      correct: 0
+    };
+  }
+}
+
+// Global persistent pool across tries so consecutive games NEVER repeat questions
+let persistentQuestionPool = [];
+let activeQuestions = [];
+let currentQuestion = 0;
+let currentQuestionCorrectIdx = 0;
+let quizLocked = false;
+
+function refillQuestionPool() {
+  // Combine 105 base questions with 15 dynamic procedural questions
+  const dynamicQuestions = Array.from({ length: 15 }, generateProceduralQuestion);
+  persistentQuestionPool = fisherYatesShuffle([...ALL_QUESTIONS, ...dynamicQuestions]);
+}
+
+function startStage3() {
+  gameState.scores[2] = 0;
+  currentQuestion = 0;
+  quizLocked = false;
+
+  // Ensure persistent pool has enough questions for this run (at least 25 questions)
+  if (persistentQuestionPool.length < 25) {
+    refillQuestionPool();
+  }
+
+  // Draw 25 unique non-repeating questions for this play session
+  activeQuestions = persistentQuestionPool.splice(0, 25);
+
+  showScreen('stage3-screen');
+  document.getElementById('s3-player').textContent = '🎮 ' + gameState.playerName;
+  document.getElementById('s3-score').textContent = '0';
+  showQuestion();
+  startTimer(45, 's3-timer', endStage3);
+}
+
+function showQuestion() {
+  if (currentQuestion >= activeQuestions.length) {
+    // If player reaches end of the 25 questions in 45s, take next fresh batch from pool
+    if (persistentQuestionPool.length < 15) refillQuestionPool();
+    activeQuestions = persistentQuestionPool.splice(0, 15);
+    currentQuestion = 0;
+  }
+
+  const rawQ = activeQuestions[currentQuestion];
+  const correctText = rawQ.opts[rawQ.correct];
+
+  // Randomize the 4 option positions (الف, ب, ج, د) so position CANNOT be memorized!
+  const shuffledOpts = fisherYatesShuffle(rawQ.opts);
+  currentQuestionCorrectIdx = shuffledOpts.indexOf(correctText);
+
+  const letters = ['الف', 'ب', 'ج', 'د'];
+  const area = document.getElementById('s3-question-area');
+  area.innerHTML = `
+    <div class="question-card">
+      <div class="question-num">⚡ سؤال ${currentQuestion + 1}</div>
+      <div class="question-text">${rawQ.q}</div>
+      <div class="options">
+        ${shuffledOpts.map((o, i) => `
+          <button class="option-btn" data-idx="${i}" onclick="answerQuestion(${i})">
+            <span class="option-letter">${letters[i]}</span>
+            <span>${o}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+  quizLocked = false;
+}
+
+function answerQuestion(idx) {
+  if (quizLocked) return;
+  quizLocked = true;
+  const btns = document.querySelectorAll('#s3-question-area .option-btn');
+
+  btns.forEach(b => b.classList.add('disabled'));
+
+  if (idx === currentQuestionCorrectIdx) {
+    btns[idx].classList.add('correct');
+    gameState.scores[2] += 20;
+    document.getElementById('s3-score').textContent = gameState.scores[2];
+    playCorrect();
+  } else {
+    btns[idx].classList.add('wrong');
+    if (btns[currentQuestionCorrectIdx]) {
+      btns[currentQuestionCorrectIdx].classList.add('correct');
+    }
+    playWrong();
+  }
+
+  setTimeout(() => {
+    currentQuestion++;
+    showQuestion();
+  }, 850);
+}
+
+function endStage3() {
+  showTransition(4, 'شکار بیت', () => startStage4());
+}
+
+/* ======================================================================
+   STAGE 4: BIT HUNTER
+   ====================================================================== */
+let hunterInterval = null;
+let hunterActive = false;
+
+function startStage4() {
+  gameState.scores[3] = 0;
+  hunterActive = true;
+  showScreen('stage4-screen');
+  document.getElementById('s4-score').textContent = '0';
+  document.getElementById('s4-area').innerHTML = '';
+  startSpawning();
+  startTimer(30, 's4-timer', endStage4);
+}
+
+function startSpawning() {
+  if (!hunterActive) return;
+  spawnBit();
+  const delay = 320 + Math.random() * 380;
+  hunterInterval = setTimeout(() => startSpawning(), delay);
+}
+
+function spawnBit() {
+  if (!hunterActive) return;
+  const area = document.getElementById('s4-area');
+  const areaRect = area.getBoundingClientRect();
+
+  // Probability distribution:
+  // 45% -> 1 (Target)
+  // 25% -> 0 (Normal Decoy)
+  // 30% -> 2, 3, 4 (High Speed Traps)
+  const roll = Math.random();
+  let digit, bitType, fallDuration, isTrap = false;
+
+  if (roll < 0.45) {
+    digit = '1';
+    bitType = 'bit-1';
+    fallDuration = 2400 + Math.random() * 1800; // Normal speed (2.4s - 4.2s)
+  } else if (roll < 0.70) {
+    digit = '0';
+    bitType = 'bit-0';
+    fallDuration = 2400 + Math.random() * 1800; // Normal speed
+  } else {
+    // Digits 2, 3, 4: High Speed Traps!
+    const trapRoll = Math.random();
+    if (trapRoll < 0.35) {
+      digit = '2';
+      bitType = 'bit-2';
+    } else if (trapRoll < 0.70) {
+      digit = '3';
+      bitType = 'bit-3';
+    } else {
+      digit = '4';
+      bitType = 'bit-4';
+    }
+    isTrap = true;
+    // Much faster falling speed as requested (1.0s to 1.8s)
+    fallDuration = 1000 + Math.random() * 800;
+  }
+
+  const bit = document.createElement('div');
+  bit.className = `falling-bit ${bitType}`;
+  bit.textContent = digit;
+  bit.dataset.value = digit;
+  bit.dataset.isTrap = isTrap ? 'true' : 'false';
+
+  const maxX = Math.max(10, areaRect.width - 65);
+  bit.style.left = (10 + Math.random() * maxX) + 'px';
+  bit.style.top = '-55px';
+
+  // Click/tap handler
+  const tapHandler = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!hunterActive) return;
+    bit.removeEventListener('pointerdown', tapHandler);
+
+    if (bit.dataset.value === '1') {
+      gameState.scores[3] += 5;
+      bit.classList.add('pop');
+      playCorrect();
+      showFloatingScore(bit, '+۵ ✨', '#2ECC71');
+    } else if (bit.dataset.isTrap === 'true') {
+      gameState.scores[3] = Math.max(0, gameState.scores[3] - 5);
+      bit.classList.add('wrong-tap');
+      playWrong();
+      showFloatingScore(bit, '-۵ ⚠️ تله!', '#E74C3C');
+    } else {
+      gameState.scores[3] = Math.max(0, gameState.scores[3] - 3);
+      bit.classList.add('wrong-tap');
+      playWrong();
+      showFloatingScore(bit, '-۳', '#E74C3C');
+    }
+    document.getElementById('s4-score').textContent = gameState.scores[3];
+    setTimeout(() => bit.remove(), 400);
+  };
+  bit.addEventListener('pointerdown', tapHandler);
+
+  area.appendChild(bit);
+
+  // Animate falling
+  let startTime = null;
+  function fall(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const progress = (timestamp - startTime) / fallDuration;
+    if (progress >= 1 || !hunterActive) {
+      bit.remove();
+      return;
+    }
+    bit.style.top = (-55 + progress * (areaRect.height + 70)) + 'px';
+    requestAnimationFrame(fall);
+  }
+  requestAnimationFrame(fall);
+}
+
+function showFloatingScore(bit, text, color) {
+  const float = document.createElement('div');
+  float.className = 'hunter-score-float';
+  float.textContent = text;
+  float.style.color = color;
+  float.style.left = bit.style.left;
+  float.style.top = bit.style.top;
+  document.getElementById('s4-area').appendChild(float);
+  setTimeout(() => float.remove(), 1000);
+}
+
+function endStage4() {
+  hunterActive = false;
+  clearTimeout(hunterInterval);
+  showResults();
+}
+
+/* ======================================================================
+   RESULTS
+   ====================================================================== */
+async function showResults() {
+  showScreen('results-screen');
+  playFanfare();
+
+  const stageNames = ['رمزگشایی باینری', 'حافظه بیتی', 'رمز ۲۵۶', 'شکار بیت'];
+  const total = gameState.scores.reduce((a, b) => a + b, 0);
+  const maxIdx = gameState.scores.indexOf(Math.max(...gameState.scores));
+
+  document.getElementById('res-player').textContent = '🎮 ' + gameState.playerName;
+
+  const tbody = document.getElementById('res-tbody');
+  tbody.innerHTML = '';
+  gameState.scores.forEach((s, i) => {
+    const star = i === maxIdx ? ' <span class="star">⭐</span>' : '';
+    tbody.innerHTML += `<tr><td>مرحله ${i + 1}</td><td>${stageNames[i]}</td><td>${s}${star}</td></tr>`;
+  });
+
+  document.getElementById('res-total').textContent = total + ' امتیاز';
+
+  // Save to IndexedDB
+  try {
+    const record = {
+      playerName: gameState.playerName,
+      stage1Score: gameState.scores[0],
+      stage2Score: gameState.scores[1],
+      stage3Score: gameState.scores[2],
+      stage4Score: gameState.scores[3],
+      totalScore: total,
+      timestamp: new Date().toISOString()
+    };
+    gameState.lastRecordId = await saveRecord(record);
+
+    // Get rank
+    const records = await getAllRecords();
+    records.sort((a, b) => b.totalScore - a.totalScore);
+    const rank = records.findIndex(r => r.id === gameState.lastRecordId) + 1;
+    document.getElementById('res-rank').textContent = `🏅 رتبه شما: ${rank} از ${records.length} بازیکن`;
+  } catch (e) {
+    document.getElementById('res-rank').textContent = '';
+  }
+
+  // Confetti if > 200
+  if (total > 200) {
+    launchConfetti();
+  }
+}
+
+/* ======================================================================
+   LEADERBOARD
+   ====================================================================== */
+async function showLeaderboard() {
+  showScreen('leaderboard-screen');
+  const content = document.getElementById('lb-content');
+
+  try {
+    const records = await getAllRecords();
+    if (records.length === 0) {
+      content.innerHTML = '<div class="lb-empty">هنوز بازی‌ای ثبت نشده! 🎮</div>';
+      return;
+    }
+    records.sort((a, b) => b.totalScore - a.totalScore);
+
+    let html = `<table class="lb-table">
+      <thead><tr>
+        <th>#</th><th>بازیکن</th><th>م۱</th><th>م۲</th><th>م۳</th><th>م۴</th><th>کل</th><th>تاریخ</th>
+      </tr></thead><tbody>`;
+
+    records.forEach((r, i) => {
+      const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+      const highlight = r.id === gameState.lastRecordId ? 'highlight' : '';
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+      const date = new Date(r.timestamp);
+      const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+      html += `<tr class="${highlight}">
+        <td class="${rankClass}">${medal}</td>
+        <td>${r.playerName}</td>
+        <td>${r.stage1Score}</td><td>${r.stage2Score}</td>
+        <td>${r.stage3Score}</td><td>${r.stage4Score}</td>
+        <td><strong>${r.totalScore}</strong></td>
+        <td style="font-size:.7rem">${dateStr}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    content.innerHTML = html;
+  } catch (e) {
+    content.innerHTML = '<div class="lb-empty">خطا در بارگذاری لیدربورد</div>';
+  }
+}
+
+/* ======================================================================
+   CONFETTI
+   ====================================================================== */
+function launchConfetti() {
+  const container = document.getElementById('confetti');
+  container.innerHTML = '';
+  const colors = ['#C0392B', '#F39C12', '#2ECC71', '#3498DB', '#9B59B6', '#E74C3C', '#F1C40F'];
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+    piece.style.animationDelay = (Math.random() * 2) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (12 + Math.random() * 12) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.innerHTML = '', 6000);
+}
+
+/* ======================================================================
+   INIT
+   ====================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  initParticles();
+  openDB().catch(() => {});
+});
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
