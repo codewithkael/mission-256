@@ -1,5 +1,5 @@
 // Mission 256 — Service Worker
-const CACHE_NAME = 'mission256-v1';
+const CACHE_NAME = 'mission256-v2';
 const ASSETS = [
   './index.html',
   './manifest.json',
